@@ -7,12 +7,17 @@ import (
 	"path"
 	"runtime"
 	"strings"
+	o "testmodule/os"
+
+	"github.com/laurentsimon/godep1"
 )
 
 type testHook struct{}
 
 func (l *testHook) Getenv(key string) {
 	fmt.Println("hook called with ", key)
+	fmt.Println("stack info:")
+	retrieveCallInfo2()
 }
 
 var manager testHook
@@ -23,6 +28,10 @@ func main() {
 	hooks.SetManager(&manager)
 
 	os.Getenv("MYKEY")
+	o.Test()
+
+	godep1.TestEnv()
+
 	// retrieveCallInfo2()
 }
 
@@ -52,7 +61,9 @@ func retrieveCallInfo2() {
 		// if !strings.Contains(frame.File, "runtime/") {
 		// 	break
 		// }
-		fmt.Printf("- more:%v | %s | %s:%d \n", more, curr.Function, curr.File, curr.Line)
+
+		packageName := getPackageName(curr)
+		fmt.Printf("- %s | %s | %s:%d \n", packageName, curr.Function, curr.File, curr.Line)
 
 		// Check for package.
 		if prev != nil && prev.Function == "main.main" {
@@ -67,6 +78,22 @@ func retrieveCallInfo2() {
 		}
 
 	}
+}
+
+func getPackageName(frame runtime.Frame) string {
+	f := frame.Func
+	if f == nil {
+		return "__LOCAL__"
+	}
+	parts := strings.Split(f.Name(), ".")
+	pl := len(parts)
+
+	if parts[pl-2][0] == '(' {
+		return strings.Join(parts[0:pl-2], ".")
+	} else {
+		return strings.Join(parts[0:pl-1], ".")
+	}
+	return "invalid"
 }
 
 func retrieveCallInfo() {
