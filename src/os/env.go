@@ -7,8 +7,10 @@
 package os
 
 import (
-	"internal/testlog"
+	"hooks"
 	"syscall"
+
+	"internal/testlog"
 )
 
 // Expand replaces ${var} or $var in the string based on the mapping function.
@@ -99,6 +101,7 @@ func getShellName(s string) (string, int) {
 // It returns the value, which will be empty if the variable is not present.
 // To distinguish between an empty value and an unset value, use LookupEnv.
 func Getenv(key string) string {
+	hooks.Getenv(key)
 	testlog.Getenv(key)
 	v, _ := syscall.Getenv(key)
 	return v
@@ -110,6 +113,7 @@ func Getenv(key string) string {
 // Otherwise the returned value will be empty and the boolean will
 // be false.
 func LookupEnv(key string) (string, bool) {
+	hooks.Getenv(key)
 	testlog.Getenv(key)
 	return syscall.Getenv(key)
 }
