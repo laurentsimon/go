@@ -9,14 +9,15 @@ import (
 	"strings"
 	o "testmodule/os"
 
-	"github.com/laurentsimon/godep1"
+	"github.com/laurentsimon/godep2"
 )
 
 type testHook struct{}
 
 func (l *testHook) Getenv(key string) {
 	fmt.Println("hook called with ", key)
-	fmt.Println("stack info:")
+	// fmt.Println("stack info:")
+
 	retrieveCallInfo2()
 }
 
@@ -30,7 +31,7 @@ func main() {
 	os.Getenv("MYKEY")
 	o.Test()
 
-	godep1.TestEnv()
+	godep2.TestEnv2()
 
 	// retrieveCallInfo2()
 }
@@ -48,8 +49,24 @@ func retrieveCallInfo2() {
 	for i := 0; i <= len(pc)-1; i++ {
 		rpc[i] = pc[len(pc)-(i+1)]
 	}
+
+	// TODO: query once and make it a double-linked list ?
+
+	// Get package name.
+	// Only needed if the main program or some packages have context-less permissions.
+	// frames := runtime.CallersFrames(pc)
+	// for {
+	// 	curr, more := frames.Next()
+	// 	packageName := getPackageName(curr.Function)
+	// 	if packageName == ""
+	// 	if !more {
+	// 		break
+	// 	}
+	// }
+	// Get the frames
 	frames := runtime.CallersFrames(rpc)
-	var prev *runtime.Frame
+	prevIs3P := false
+	directDepName := "<local>"
 	for {
 		curr, more := frames.Next()
 
@@ -62,15 +79,17 @@ func retrieveCallInfo2() {
 		// 	break
 		// }
 
-		packageName := getPackageName(curr)
-		fmt.Printf("- %s | %s | %s:%d \n", packageName, curr.Function, curr.File, curr.Line)
+		packageName := getPackageName(curr.Function)
+		// fmt.Printf("- %s | %s | %s:%d \n", packageName, curr.Function, curr.File, curr.Line)
+
+		currIs3P := is3PDependency(curr.File)
 
 		// Check for package.
-		if prev != nil && prev.Function == "main.main" {
-			fmt.Println("direct dep is ", curr.Function)
+		if currIs3P && !prevIs3P {
+			directDepName = packageName
 			break
 		}
-		prev = &curr
+		prevIs3P = currIs3P
 
 		// Check whether there are more frames to process after this one.
 		if !more {
@@ -78,14 +97,15 @@ func retrieveCallInfo2() {
 		}
 
 	}
+	fmt.Println("direct dep is ", directDepName)
 }
 
-func getPackageName(frame runtime.Frame) string {
-	f := frame.Func
-	if f == nil {
-		return "__LOCAL__"
-	}
-	parts := strings.Split(f.Name(), ".")
+func is3PDependency(filename string) bool {
+	return strings.Contains(filename, "/pkg/mod/")
+}
+
+func getPackageName(packageName string) string {
+	parts := strings.Split(packageName, ".")
 	pl := len(parts)
 
 	if parts[pl-2][0] == '(' {
