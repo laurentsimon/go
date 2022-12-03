@@ -1,0 +1,5 @@
+github.com/laurentsimon/godep1 v0.0.0-20221202230856-502a385f4153/go.mod h1:pkhPjXvKpfKLVohM+2hvxl/IXgiU74bRLblAxyiDGpA=
+github.com/laurentsimon/godep2 v0.0.0-20221202231905-d22f93444118 h1:5IsWReSxMCcpURb/hiMjx6Poqn1uDY4Uqo+FiA2AMSY=
+github.com/laurentsimon/godep2 v0.0.0-20221202231905-d22f93444118/go.mod h1:/sHLS41tlcuAiJQdcqPiDytgJyvyCjQltjZBcmqwQMA=
+github.com/laurentsimon/godep2 v1.0.1 h1:NJwkTmzCTyLIqwEnPHWUYOjoSv9zeLLd/ATRWgSg1Wc=
+github.com/laurentsimon/godep2 v1.0.1/go.mod h1:/sHLS41tlcuAiJQdcqPiDytgJyvyCjQltjZBcmqwQMA=
